@@ -1,8 +1,9 @@
-// services/firestore_service.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/app_user.dart';
 import '../models/todo_model.dart';
 
+/// Service class for Firestore operations
+/// Handles user profiles and task management
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -10,106 +11,78 @@ class FirestoreService {
   CollectionReference get _usersCollection => _firestore.collection('users');
   CollectionReference get _todosCollection => _firestore.collection('todos');
 
-  // ==================== USER OPERATIONS ====================
+  // ========== USER PROFILE OPERATIONS ==========
 
-  /// Create or update user profile in Firestore
-  Future<void> createOrUpdateUser({
-    required String uid,
-    required String name,
-    required String email,
-    String? photoUrl,
-  }) async {
+  /// Create a new user profile
+  Future<void> createUserProfile(AppUser user) async {
     try {
-      final userDoc = _usersCollection.doc(uid);
-      final docSnapshot = await userDoc.get();
-
-      if (docSnapshot.exists) {
-        // Update existing user
-        await userDoc.update({
-          'name': name,
-          'email': email,
-          'photoUrl': photoUrl,
-          'lastLogin': FieldValue.serverTimestamp(),
-        });
-      } else {
-        // Create new user
-        await userDoc.set({
-          'name': name,
-          'email': email,
-          'photoUrl': photoUrl,
-          'createdAt': FieldValue.serverTimestamp(),
-          'lastLogin': FieldValue.serverTimestamp(),
-        });
-      }
+      await _usersCollection.doc(user.uid).set(user.toFirestore());
     } catch (e) {
-      throw Exception('Failed to save user data: ${e.toString()}');
+      throw Exception('Failed to create user profile: $e');
     }
   }
 
-  /// Get user profile from Firestore
-  Future<AppUser?> getUser(String uid) async {
+  /// Get user profile by ID
+  Future<AppUser> getUserProfile(String uid) async {
     try {
-      final docSnapshot = await _usersCollection.doc(uid).get();
-      if (docSnapshot.exists) {
-        return AppUser.fromFirestore(docSnapshot);
+      final doc = await _usersCollection.doc(uid).get();
+      
+      if (!doc.exists) {
+        throw Exception('User profile not found');
       }
-      return null;
+
+      return AppUser.fromFirestore(doc);
     } catch (e) {
-      throw Exception('Failed to fetch user data: ${e.toString()}');
+      throw Exception('Failed to get user profile: $e');
     }
   }
 
   /// Update user profile
-  Future<void> updateUserProfile({
-    required String uid,
-    String? name,
-    String? photoUrl,
-  }) async {
+  Future<void> updateUserProfile(String uid, Map<String, dynamic> data) async {
     try {
-      final Map<String, dynamic> updates = {};
-      if (name != null) updates['name'] = name;
-      if (photoUrl != null) updates['photoUrl'] = photoUrl;
-
-      if (updates.isNotEmpty) {
-        await _usersCollection.doc(uid).update(updates);
-      }
+      await _usersCollection.doc(uid).update(data);
     } catch (e) {
-      throw Exception('Failed to update profile: ${e.toString()}');
+      throw Exception('Failed to update user profile: $e');
     }
   }
 
-  /// Stream of user profile (real-time updates)
-  Stream<AppUser?> userStream(String uid) {
-    return _usersCollection.doc(uid).snapshots().map((snapshot) {
-      if (snapshot.exists) {
-        return AppUser.fromFirestore(snapshot);
-      }
-      return null;
-    });
-  }
-
-  // ==================== TODO/TASK OPERATIONS ====================
-
-  /// Create a new task
-  Future<String> createTask({
-    required String userId,
-    required String title,
-  }) async {
+  /// Delete user profile
+  Future<void> deleteUserProfile(String uid) async {
     try {
-      final docRef = await _todosCollection.add({
-        'userId': userId,
-        'title': title,
-        'completed': false,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-      return docRef.id;
+      await _usersCollection.doc(uid).delete();
     } catch (e) {
-      throw Exception('Failed to create task: ${e.toString()}');
+      throw Exception('Failed to delete user profile: $e');
     }
   }
 
-  /// Get all tasks for a user
-  Future<List<Todo>> getUserTasks(String userId) async {
+  // ========== TODO OPERATIONS ==========
+
+  /// Create a new todo
+  Future<void> createTodo(TodoModel todo) async {
+    try {
+      await _todosCollection.doc(todo.id).set(todo.toFirestore());
+    } catch (e) {
+      throw Exception('Failed to create todo: $e');
+    }
+  }
+
+  /// Get a single todo by ID
+  Future<TodoModel> getTodo(String todoId) async {
+    try {
+      final doc = await _todosCollection.doc(todoId).get();
+      
+      if (!doc.exists) {
+        throw Exception('Todo not found');
+      }
+
+      return TodoModel.fromFirestore(doc);
+    } catch (e) {
+      throw Exception('Failed to get todo: $e');
+    }
+  }
+
+  /// Get all todos for a user
+  Future<List<TodoModel>> getUserTodos(String userId) async {
     try {
       final querySnapshot = await _todosCollection
           .where('userId', isEqualTo: userId)
@@ -117,100 +90,171 @@ class FirestoreService {
           .get();
 
       return querySnapshot.docs
-          .map((doc) => Todo.fromFirestore(doc))
+          .map((doc) => TodoModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      throw Exception('Failed to fetch tasks: ${e.toString()}');
+      throw Exception('Failed to get user todos: $e');
     }
   }
 
-  /// Stream of user tasks (real-time updates)
-  Stream<List<Todo>> userTasksStream(String userId) {
-    return _todosCollection
-        .where('userId', isEqualTo: userId)
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .map((snapshot) {
-      return snapshot.docs.map((doc) => Todo.fromFirestore(doc)).toList();
-    });
+  /// Get pinned todos for a user
+  Future<List<TodoModel>> getPinnedTodos(String userId) async {
+    try {
+      final querySnapshot = await _todosCollection
+          .where('userId', isEqualTo: userId)
+          .where('isPinned', isEqualTo: true)
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      return querySnapshot.docs
+          .map((doc) => TodoModel.fromFirestore(doc))
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to get pinned todos: $e');
+    }
   }
 
-  /// Update task completion status
-  Future<void> updateTaskStatus({
-    required String taskId,
-    required bool completed,
-  }) async {
+  /// Get completed todos for a user
+  Future<List<TodoModel>> getCompletedTodos(String userId) async {
     try {
-      await _todosCollection.doc(taskId).update({
-        'completed': completed,
+      final querySnapshot = await _todosCollection
+          .where('userId', isEqualTo: userId)
+          .where('isCompleted', isEqualTo: true)
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      return querySnapshot.docs
+          .map((doc) => TodoModel.fromFirestore(doc))
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to get completed todos: $e');
+    }
+  }
+
+  /// Get pending todos for a user
+  Future<List<TodoModel>> getPendingTodos(String userId) async {
+    try {
+      final querySnapshot = await _todosCollection
+          .where('userId', isEqualTo: userId)
+          .where('isCompleted', isEqualTo: false)
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      return querySnapshot.docs
+          .map((doc) => TodoModel.fromFirestore(doc))
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to get pending todos: $e');
+    }
+  }
+
+  /// Update a todo
+  Future<void> updateTodo(TodoModel todo) async {
+    try {
+      await _todosCollection.doc(todo.id).update(todo.toFirestore());
+    } catch (e) {
+      throw Exception('Failed to update todo: $e');
+    }
+  }
+
+  /// Delete a todo
+  Future<void> deleteTodo(String todoId) async {
+    try {
+      await _todosCollection.doc(todoId).delete();
+    } catch (e) {
+      throw Exception('Failed to delete todo: $e');
+    }
+  }
+
+  /// Toggle todo completion status
+  Future<void> toggleTodoCompletion(String todoId, bool isCompleted) async {
+    try {
+      await _todosCollection.doc(todoId).update({
+        'isCompleted': isCompleted,
+        'updatedAt': Timestamp.now(),
       });
     } catch (e) {
-      throw Exception('Failed to update task: ${e.toString()}');
+      throw Exception('Failed to toggle todo completion: $e');
     }
   }
 
-  /// Update task title
-  Future<void> updateTaskTitle({
-    required String taskId,
-    required String title,
-  }) async {
+  /// Toggle todo pin status (NEW for Week 6)
+  Future<void> toggleTodoPin(String todoId, bool isPinned) async {
     try {
-      await _todosCollection.doc(taskId).update({
-        'title': title,
+      await _todosCollection.doc(todoId).update({
+        'isPinned': isPinned,
+        'updatedAt': Timestamp.now(),
       });
     } catch (e) {
-      throw Exception('Failed to update task: ${e.toString()}');
+      throw Exception('Failed to toggle todo pin: $e');
     }
   }
 
-  /// Delete a task
-  Future<void> deleteTask(String taskId) async {
+  /// Delete all completed todos for a user
+  Future<void> deleteCompletedTodos(String userId) async {
     try {
-      await _todosCollection.doc(taskId).delete();
+      final querySnapshot = await _todosCollection
+          .where('userId', isEqualTo: userId)
+          .where('isCompleted', isEqualTo: true)
+          .get();
+
+      final batch = _firestore.batch();
+      for (var doc in querySnapshot.docs) {
+        batch.delete(doc.reference);
+      }
+
+      await batch.commit();
     } catch (e) {
-      throw Exception('Failed to delete task: ${e.toString()}');
+      throw Exception('Failed to delete completed todos: $e');
     }
   }
 
-  /// Delete all tasks for a user
-  Future<void> deleteAllUserTasks(String userId) async {
+  /// Delete all todos for a user
+  Future<void> deleteAllUserTodos(String userId) async {
     try {
       final querySnapshot = await _todosCollection
           .where('userId', isEqualTo: userId)
           .get();
 
       final batch = _firestore.batch();
-      for (final doc in querySnapshot.docs) {
+      for (var doc in querySnapshot.docs) {
         batch.delete(doc.reference);
       }
+
       await batch.commit();
     } catch (e) {
-      throw Exception('Failed to delete tasks: ${e.toString()}');
+      throw Exception('Failed to delete all user todos: $e');
     }
   }
 
-  /// Get task count for a user
-  Future<int> getUserTaskCount(String userId) async {
+  // ========== STREAM OPERATIONS (for real-time updates) ==========
+
+  /// Stream of all todos for a user
+  Stream<List<TodoModel>> streamUserTodos(String userId) {
     try {
-      final querySnapshot = await _todosCollection
+      return _todosCollection
           .where('userId', isEqualTo: userId)
-          .get();
-      return querySnapshot.docs.length;
+          .orderBy('createdAt', descending: true)
+          .snapshots()
+          .map((snapshot) {
+        return snapshot.docs
+            .map((doc) => TodoModel.fromFirestore(doc))
+            .toList();
+      });
     } catch (e) {
-      throw Exception('Failed to count tasks: ${e.toString()}');
+      throw Exception('Failed to stream user todos: $e');
     }
   }
 
-  /// Get completed task count
-  Future<int> getCompletedTaskCount(String userId) async {
+  /// Stream of user profile
+  Stream<AppUser> streamUserProfile(String uid) {
     try {
-      final querySnapshot = await _todosCollection
-          .where('userId', isEqualTo: userId)
-          .where('completed', isEqualTo: true)
-          .get();
-      return querySnapshot.docs.length;
+      return _usersCollection
+          .doc(uid)
+          .snapshots()
+          .map((doc) => AppUser.fromFirestore(doc));
     } catch (e) {
-      throw Exception('Failed to count completed tasks: ${e.toString()}');
+      throw Exception('Failed to stream user profile: $e');
     }
   }
 }

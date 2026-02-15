@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/todo_model.dart';
 
 class TasksTab extends StatefulWidget {
-  final List<Todo> todos;
+  final List<TodoModel> todos;
   final bool isLoading;
   final Function(String, bool) onToggle;
   final Function(String) onCreateTask;
@@ -100,7 +100,7 @@ class _TasksTabState extends State<TasksTab> {
   }
 
   Widget _buildStatsHeader() {
-    final completedCount = widget.todos.where((t) => t.completed).length;
+    final completedCount = widget.todos.where((t) => t.isCompleted).length;
     final totalCount = widget.todos.length;
     final completionRate = totalCount > 0
         ? (completedCount / totalCount * 100).toStringAsFixed(0)
@@ -199,9 +199,9 @@ class _TasksTabState extends State<TasksTab> {
     );
   }
 
-  Widget _buildTaskCard(Todo todo) {
+  Widget _buildTaskCard(TodoModel todo) {
     return Dismissible(
-      key: Key(todo.id ?? todo.title),
+      key: Key(todo.id),
       direction: DismissDirection.endToStart,
       background: Container(
         margin: const EdgeInsets.only(bottom: 12),
@@ -240,7 +240,7 @@ class _TasksTabState extends State<TasksTab> {
         );
       },
       onDismissed: (direction) {
-        widget.onDeleteTask(todo.id!);
+        widget.onDeleteTask(todo.id);
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
@@ -248,7 +248,7 @@ class _TasksTabState extends State<TasksTab> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: todo.completed
+            color: todo.isCompleted
                 ? Colors.green.shade200
                 : Colors.grey.shade200,
           ),
@@ -266,9 +266,9 @@ class _TasksTabState extends State<TasksTab> {
             vertical: 8,
           ),
           leading: Checkbox(
-            value: todo.completed,
+            value: todo.isCompleted,
             onChanged: (value) {
-              widget.onToggle(todo.id!, value ?? false);
+              widget.onToggle(todo.id, value ?? false);
             },
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(6),
@@ -280,33 +280,31 @@ class _TasksTabState extends State<TasksTab> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
-              color: todo.completed
+              color: todo.isCompleted
                   ? Colors.grey.shade500
                   : const Color(0xFF1A1A1A),
-              decoration: todo.completed
+              decoration: todo.isCompleted
                   ? TextDecoration.lineThrough
                   : TextDecoration.none,
             ),
           ),
-          subtitle: todo.createdAt != null
-              ? Padding(
+          subtitle: Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
-                    _formatDate(todo.createdAt!),
+                    _formatDate(todo.createdAt),
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey.shade600,
                     ),
                   ),
-                )
-              : null,
+                ),
           trailing: IconButton(
             icon: Icon(
               Icons.delete_outline,
               color: Colors.red.shade400,
             ),
             onPressed: () {
-              _showDeleteConfirmation(todo.id!, todo.title);
+              _showDeleteConfirmation(todo.id, todo.title);
             },
           ),
         ),

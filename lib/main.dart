@@ -1,100 +1,97 @@
-// main.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'screens/login_screen.dart';
-import 'screens/user_profile_page.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:provider/provider.dart';
 import 'firebase_options.dart';
+import 'providers/auth_provider.dart';
+import 'providers/task_provider.dart';
+import 'providers/theme_provider.dart';
+import 'screens/auth/auth_screen.dart';
+import 'screens/main/main_screen.dart';
+import 'services/notification_service.dart';
 
-// TODO: Add your Firebase configuration
-// Follow the setup instructions in README.md
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  try {
-    await Firebase.initializeApp(
-     options: FirebaseOptions(
-      apiKey: "AIzaSyBn8c7ZpKZWu_-NVLvWbm7J6zhV7GLoYNY",
-      authDomain: "week05-7526a.firebaseapp.com",
-      projectId: "week05-7526a",
-      storageBucket: "week05-7526a.firebasestorage.app",
-      messagingSenderId: "197813352454",
-      appId: "1:197813352454:web:cb778af9279b188ce52b87",
-      measurementId: "G-W3FMGK61G6"
-  ),
-);
 
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
+  // Register background message handler for FCM
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
+  // Initialize Push Notifications
+  final notificationService = NotificationService();
+  await notificationService.initialize();
 
-  } catch (e) {
-    print('Firebase initialization error: $e');
-  }
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Flutter Firebase Auth',
-      theme: ThemeData(
-        // Light mode theme - Professional
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
-          brightness: Brightness.light,
+    // MultiProvider setup for state management
+    return MultiProvider(
+      providers: [
+        // Theme Provider
+        ChangeNotifierProvider(
+          create: (_) => ThemeProvider(),
         ),
-        scaffoldBackgroundColor: Colors.grey.shade50,
-        appBarTheme: AppBarTheme(
-          backgroundColor: Colors.white,
-          foregroundColor: const Color(0xFF1A1A1A),
-          elevation: 0,
-          centerTitle: true,
+        
+        // Auth Provider
+        ChangeNotifierProvider(
+          create: (_) => AuthProvider(),
         ),
-        cardTheme: CardThemeData(
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          color: Colors.white,
+        
+        // Task Provider (depends on Auth Provider)
+        ChangeNotifierProxyProvider<AuthProvider, TaskProvider>(
+          create: (_) => TaskProvider(),
+          update: (_, authProvider, taskProvider) {
+            // Update task provider when user changes
+            taskProvider?.setUserId(authProvider.user?.uid);
+            return taskProvider ?? TaskProvider();
+          },
         ),
-        inputDecorationTheme: InputDecorationTheme(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          filled: true,
-          fillColor: Colors.grey.shade50,
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            elevation: 2,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        ),
+      ],
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, _) {
+          return MaterialApp(
+            title: 'Ta-Daa',
+            debugShowCheckedModeBanner: false,
+            
+            // Theme configuration
+            theme: themeProvider.lightTheme,
+            darkTheme: themeProvider.darkTheme,
+            themeMode: themeProvider.themeMode,
+            
+            // Performance: Custom page transitions with animations
+            builder: (context, child) {
+              return child ?? const SizedBox.shrink();
+            },
+            
+            // Home screen based on auth state
+            home: const AuthWrapper(),
+          );
+        },
       ),
-      home: const AuthWrapper(),
     );
   }
 }
 
-/// AuthWrapper handles authentication state changes
-/// Shows LoginScreen when logged out, UserProfilePage when logged in
+/// Wrapper widget to determine which screen to show based on auth state
+/// Uses AnimatedSwitcher for smooth transitions between screens
 class AuthWrapper extends StatelessWidget {
-  const AuthWrapper({Key? key}) : super(key: key);
+  const AuthWrapper({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
-      builder: (context, snapshot) {
+    return Consumer<AuthProvider>(
+      builder: (context, authProvider, _) {
         // Show loading indicator while checking auth state
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (authProvider.isLoading) {
           return const Scaffold(
             body: Center(
               child: CircularProgressIndicator(),
@@ -102,54 +99,27 @@ class AuthWrapper extends StatelessWidget {
           );
         }
 
-        // Show error if something went wrong
-        if (snapshot.hasError) {
-          return Scaffold(
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.error_outline,
-                    color: Colors.red,
-                    size: 60,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Something went wrong!',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey.shade700,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    snapshot.error.toString(),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                ],
+        // Animated transition between auth and main screens
+        return AnimatedSwitcher(
+          duration: const Duration(milliseconds: 500),
+          switchInCurve: Curves.easeInOut,
+          switchOutCurve: Curves.easeInOut,
+          transitionBuilder: (child, animation) {
+            return FadeTransition(
+              opacity: animation,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0.0, 0.05),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
               ),
-            ),
-          );
-        }
-
-        // Check if user is logged in
-        final User? user = snapshot.data;
-
-        if (user == null) {
-          // User is NOT logged in -> Show Login Screen
-          return const LoginScreen();
-        } else {
-          // User IS logged in -> Show Profile Page
-          return UserProfilePage(
-            userName: user.displayName ?? 'User',
-            userEmail: user.email ?? '',
-          );
-        }
+            );
+          },
+          child: authProvider.isAuthenticated
+              ? const MainScreen(key: ValueKey('main'))
+              : const AuthScreen(key: ValueKey('auth')),
+        );
       },
     );
   }

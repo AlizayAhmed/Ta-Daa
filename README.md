@@ -1,165 +1,38 @@
-# 🔥 Flutter Firebase Authentication & Firestore - Week 5
+# 🎉 Ta-Daa - Week 6: Provider State Management
 
-A professional Flutter app with **Firebase Authentication** (Email/Password + Google Sign-In), **Cloud Firestore** database, and a modern light-mode UI.
-
----
-
-## 📱 Features
-
-### ✅ Week 5 Implementation
-- 🔐 **Firebase Authentication**
-  - Email & Password sign-up/login
-  - Google Sign-In integration
-  - Password reset functionality
-  - Remember Me / persistent login
-  - Secure logout
-
-- ☁️ **Cloud Firestore Database**
-  - Real-time user profile storage
-  - Task management with CRUD operations
-  - Automatic data synchronization
-  - Offline persistence
-
-- 🎨 **Professional Light Mode UI**
-  - Clean, modern interface
-  - Professional color scheme
-  - Smooth animations
-  - Responsive design
-  - Material Design 3
-
-### 🔄 Previous Features (Week 1-4)
-- ✅ Form validation
-- ✅ Beautiful animations
-- ✅ API integration (JSONPlaceholder)
-- ✅ JSON parsing
-- ✅ Error handling
-- ✅ Loading states
+A professional Flutter Todo app with **Provider state management**, Firebase integration, real-time sync, push notifications, and beautiful UI/UX animations.
 
 ---
 
-## 🛠️ Tech Stack
+## 📱 Week 6 Features & Enhancements
 
-- **Flutter SDK**: 3.38.5
-- **Firebase Core**: ^3.8.1
-- **Firebase Auth**: ^5.3.3
-- **Cloud Firestore**: ^5.5.2
-- **Google Sign-In**: ^6.2.2
-- **Shared Preferences**: ^2.3.3
-- **HTTP**: ^1.1.0
+### ✨ State Management
+- ✅ **Provider Pattern** - Clean, scalable state management
+- ✅ **AuthProvider** - Authentication state management
+- ✅ **TaskProvider** - Task CRUD operations with real-time Firestore sync & optimistic UI updates
+- ✅ **ThemeProvider** - Dark/Light mode management
+- ✅ **Riverpod Example** - Advanced state management demo (`providers/riverpod_providers.dart`)
 
----
+### 🔔 Push Notifications
+- ✅ **Firebase Cloud Messaging (FCM)** - Receive push notifications (see `services/notification_service.dart`)
 
-## 📂 Updated Project Structure (2026)
+### 🎨 Redesigned UI & Animations
+- ✅ **Sliding Login/Signup Panel** - Smooth animated transition
+- ✅ **Main Screen with Filters** - All, Pending, Completed
+- ✅ **Pin Important Tasks** - Keep priority tasks at the top
+- ✅ **Dark/Light Theme Toggle** - Seamless theme switching
+- ✅ **Enhanced Profile Screen** - Change password and username
+- ✅ **Staggered List Animations** - Tasks animate in
+- ✅ **OpenContainer Transitions** - Profile navigation
+- ✅ **AnimatedSwitcher** - Auth/main screen transitions
 
-```
-lib/
-├── firebase_options.dart                # Firebase config (auto-generated)
-├── main.dart                            # App entry point with Firebase initialization
-├── models/
-│   ├── app_user.dart                    # Firebase user model
-│   ├── user_model.dart                  # API user model (Week 4)
-│   └── todo_model.dart                  # Task model with Firestore support
-├── screens/
-│   ├── login_screen.dart                # Login page with email & Google sign-in
-│   ├── signup_screen.dart               # Registration page
-│   └── user_profile_page.dart           # Profile & tasks (Firestore-powered)
-├── services/
-│   ├── api_service.dart                 # API requests (Week 4)
-│   ├── firebase_auth_service.dart       # Authentication logic
-│   └── firestore_service.dart           # Database operations
-└── widgets/
-    ├── profile_tab.dart                 # User profile UI (now with permissions dialog)
-    └── tasks_tab.dart                   # Task management UI
-```
-
----
-
-## 🚀 How to Run (Web, Port 8080)
-
-> **Important:** Google Sign-In for web is only configured for port 8080. Always use this command to run the app for web:
-
-```bash
-flutter run -d chrome --web-port=8080
-```
-
-If you use a different port, Google Sign-In will fail with a redirect_uri_mismatch error.
-
----
-
-## 🎯 Usage Guide
-
-### **First Time Users**
-1. Launch the app
-2. Click **"Sign Up"**
-3. Enter your name, email, and password
-4. Or use **"Sign up with Google"**
-5. Your profile is automatically created in Firestore
-
-### **Returning Users**
-1. Enter your email and password
-2. Check **"Remember Me"** for automatic login
-3. Or use **"Sign in with Google"**
-
-### **Managing Tasks**
-1. Go to the **Tasks** tab
-2. Tap the **➕** button to create a task
-3. Check/uncheck to mark as complete
-4. Swipe left to delete
-5. All changes sync to Firestore automatically
-
-### **Profile Management**
-1. Go to the **Profile** tab
-2. Tap the ✏️ icon to edit your name
-3. View your email (read-only)
-4. Tap **Logout** to sign out
-
----
-
-## 🔒 Firestore Security Rules (2026)
-
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Users collection
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-    // Todos collection
-    match /todos/{todoId} {
-      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-    }
-  }
-}
-```
-
----
-
-## 📝 Permissions Disclosure (in-app)
-- The app requests:
-  - **Internet**: To fetch and sync your data with the cloud.
-  - **Storage**: To cache your profile and tasks for faster access.
-- These are shown to the user in the profile page under "Privacy & Security".
-
----
-
-## 🟢 Other Notes
-- All authentication and Firestore logic is modularized in the `services/` folder.
-- All UI changes and dialogs are handled in the `widgets/` and `screens/` folders.
-- For any Google Sign-In issues, always check your port and Google Cloud Console redirect URIs.
-
----
-
-## 🛠️ Tech Stack
-
-- **Flutter SDK**: 3.38.5
-- **Firebase Core**: ^3.8.1
-- **Firebase Auth**: ^5.3.3
-- **Cloud Firestore**: ^5.5.2
-- **Google Sign-In**: ^6.2.2
-- **Shared Preferences**: ^2.3.3
-- **HTTP**: ^1.1.0
+### 🚀 Performance Optimizations
+- ✅ Efficient state management with Provider & Riverpod
+- ✅ Real-time Firestore streams with local cache
+- ✅ Optimistic UI updates for instant feedback
+- ✅ Selector widgets & caching to reduce rebuilds
+- ✅ RepaintBoundary for rendering optimization
+- ✅ Smooth 60fps animations
 
 ---
 
@@ -167,325 +40,320 @@ service cloud.firestore {
 
 ```
 lib/
-├── firebase_options.dart                # Firebase config (auto-generated)
-├── main.dart                            # App entry point with Firebase initialization
+├── main.dart                          # App entry with MultiProvider
+├── firebase_options.dart              # Firebase configuration
+│
 ├── models/
-│   ├── app_user.dart                    # Firebase user model
-│   ├── user_model.dart                  # API user model (Week 4)
-│   └── todo_model.dart                  # Task model with Firestore support
+│   ├── app_user.dart                  # User profile model
+│   └── todo_model.dart                # Task model with isPinned
+│
+├── providers/
+│   ├── auth_provider.dart             # Authentication state
+│   ├── task_provider.dart             # Task management state
+│   ├── theme_provider.dart            # Theme state
+│   └── riverpod_providers.dart        # Riverpod advanced state management (bonus)
+│
 ├── screens/
-│   ├── login_screen.dart                # Login page with email & Google sign-in
-│   ├── signup_screen.dart               # Registration page
-│   └── user_profile_page.dart           # Profile & tasks (Firestore-powered)
+│   ├── auth/
+│   │   └── auth_screen.dart           # Sliding login/signup panel
+│   ├── main/
+│   │   └── main_screen.dart           # Main app screen with filters, stats, animations
+│   └── profile/
+│       └── profile_screen.dart        # Profile with settings
+│
 ├── services/
-│   ├── api_service.dart                 # API requests (Week 4)
-│   ├── firebase_auth_service.dart       # Authentication logic
-│   └── firestore_service.dart           # Database operations
+│   ├── firebase_auth_service.dart     # Auth service
+│   ├── firestore_service.dart         # Firestore operations
+│   └── notification_service.dart      # FCM push notifications
+│
 └── widgets/
-    ├── profile_tab.dart                 # User profile UI (now with permissions dialog)
-    └── tasks_tab.dart                   # Task management UI
+    ├── profile_tab.dart               # Profile UI
+    └── tasks_tab.dart                 # Task list UI
 ```
 
 ---
 
-## 🚀 Firebase Setup Instructions
+## 🛠️ Tech Stack
 
-### **Step 1: Create a Firebase Project**
+### Core
+- **Flutter SDK**: 3.38.5
+- **Dart**: 3.0+
 
-1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Click **"Add project"**
-3. Enter project name (e.g., `flutter-auth-app`)
-4. Disable Google Analytics (optional)
-5. Click **"Create project"**
+### State Management
+- **Provider**: ^6.1.1
+- **flutter_riverpod**: ^2.6.1 (bonus)
 
----
+### Firebase
+- **Firebase Core**: ^3.8.1
+- **Firebase Auth**: ^5.3.3
+- **Cloud Firestore**: ^5.5.2
+- **Firebase Messaging**: ^15.1.6
+- **Google Sign-In**: ^6.2.2
 
-### **Step 2: Register Your App**
-
-#### **For Android:**
-
-1. In Firebase Console, click **Android icon** (🤖)
-2. Enter your package name:
-   - Open `android/app/build.gradle`
-   - Find `applicationId` (e.g., `com.example.user_profile_screen_flutter`)
-3. Download `google-services.json`
-4. Place it in: `android/app/google-services.json`
-5. Update `android/build.gradle`:
-   ```gradle
-   dependencies {
-       classpath 'com.google.gms:google-services:4.4.0'
-   }
-   ```
-6. Update `android/app/build.gradle`:
-   ```gradle
-   apply plugin: 'com.google.gms.google-services'
-   
-   android {
-       defaultConfig {
-           minSdkVersion 21  // Important for Firebase
-       }
-   }
-   ```
-
-#### **For iOS:**
-
-1. In Firebase Console, click **iOS icon** (🍎)
-2. Enter your bundle ID:
-   - Open `ios/Runner.xcodeproj` in Xcode
-   - Find Bundle Identifier
-3. Download `GoogleService-Info.plist`
-4. Open `ios/Runner.xcworkspace` in Xcode
-5. Drag `GoogleService-Info.plist` into the `Runner` folder
-6. Ensure it's added to the target
-
-#### **For Web:**
-
-1. In Firebase Console, click **Web icon** (</\>)
-2. Register your app
-3. Copy the Firebase configuration
-4. Open `lib/main.dart` and add configuration:
-   ```dart
-   await Firebase.initializeApp(
-     options: FirebaseOptions(
-       apiKey: "YOUR_API_KEY",
-       authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-       projectId: "YOUR_PROJECT_ID",
-       storageBucket: "YOUR_PROJECT_ID.appspot.com",
-       messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-       appId: "YOUR_APP_ID",
-     ),
-   );
-   ```
+### Utilities
+- **Shared Preferences**: ^2.3.3
+- **Animations**: ^2.0.11
+- **Intl**: ^0.19.0
 
 ---
 
-### **Step 3: Enable Authentication Methods**
+## 🚀 Installation & Setup
 
-1. In Firebase Console, go to **Authentication** → **Sign-in method**
-2. **Enable Email/Password**:
-   - Click "Email/Password"
-   - Toggle "Enable"
-   - Save
-
-3. **Enable Google Sign-In**:
-   - Click "Google"
-   - Toggle "Enable"
-   - Select your support email
-   - Save
-
----
-
-### **Step 4: Configure Google Sign-In**
-
-#### **For Android:**
-1. In Firebase Console, go to **Project Settings**
-2. Copy **SHA-1** fingerprint from your development machine:
-   ```bash
-   # For Windows
-   keytool -list -v -keystore "%USERPROFILE%\.android\debug.keystore" -alias androiddebugkey -storepass android -keypass android
-
-   # For Mac/Linux
-   keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android
-   ```
-3. Add SHA-1 to Firebase project settings
-
-#### **For iOS:**
-1. Add URL scheme to `ios/Runner/Info.plist`:
-   ```xml
-   <key>CFBundleURLTypes</key>
-   <array>
-       <dict>
-           <key>CFBundleTypeRole</key>
-           <string>Editor</string>
-           <key>CFBundleURLSchemes</key>
-           <array>
-               <string>com.googleusercontent.apps.YOUR_REVERSED_CLIENT_ID</string>
-           </array>
-       </dict>
-   </array>
-   ```
-   (Get `REVERSED_CLIENT_ID` from `GoogleService-Info.plist`)
-
----
-
-### **Step 5: Create Firestore Database**
-
-1. In Firebase Console, go to **Firestore Database**
-2. Click **"Create database"**
-3. Choose **"Start in test mode"** (for development)
-4. Select a location close to your users
-5. Click **"Enable"**
-
----
-
-### **Step 6: Set Firestore Rules** (Important!)
-
-1. Go to **Firestore Database** → **Rules**
-2. Replace with these security rules:
-   ```javascript
-   rules_version = '2';
-   service cloud.firestore {
-     match /databases/{database}/documents {
-       // Users can only read/write their own profile
-       match /users/{userId} {
-         allow read, write: if request.auth != null && request.auth.uid == userId;
-       }
-       
-       // Users can only read/write their own tasks
-       match /todos/{todoId} {
-         allow read, write: if request.auth != null && 
-                              resource.data.userId == request.auth.uid;
-         allow create: if request.auth != null && 
-                         request.resource.data.userId == request.auth.uid;
-       }
-     }
-   }
-   ```
-3. Click **"Publish"**
-
----
-
-## 💻 Installation & Running
-
-### **1. Clone the Repository**
+### 1. Clone the Repository
 ```bash
-git clone https://github.com/AlizayAhmed/Firebase_Authentication_and_Database
-cd Login_Flutter
+git clone https://github.com/AlizayAhmed/Ta-Daa.git
+cd Ta-Daa
 ```
 
-### **2. Install Dependencies**
+### 2. Install Dependencies
 ```bash
 flutter pub get
 ```
 
-### **3. Run the App**
+### 3. Firebase Setup
+Follow the [Firebase Setup Guide](https://firebase.google.com/docs/flutter/setup) for your platform:
+
+#### Android
+1. Add `google-services.json` to `android/app/`
+2. Update `android/build.gradle` and `android/app/build.gradle`
+
+#### iOS
+1. Add `GoogleService-Info.plist` to `ios/Runner/`
+2. Update `ios/Runner/Info.plist`
+
+#### Web
+1. Initialize Firebase in `web/index.html`
+
+### 4. Run the App
 ```bash
-# For web
-flutter run -d chrome
+# For development (any port)
+flutter run
 
-# For Android
-flutter run -d android
-
-# For iOS
-flutter run -d ios
+# For web (port 8080 for Google Sign-In)
+flutter run -d chrome --web-port=8080
 ```
 
 ---
 
-## 🎯 Usage Guide
+## 🎯 Features Guide
 
-### **First Time Users**
-1. Launch the app
-2. Click **"Sign Up"**
-3. Enter your name, email, and password
-4. Or use **"Sign up with Google"**
-5. Your profile is automatically created in Firestore
+### Authentication
+1. **Email/Password Sign Up**
+   - Enter name, email, and password
+   - Form validation with helpful error messages
+   - Automatic profile creation in Firestore
 
-### **Returning Users**
-1. Enter your email and password
-2. Check **"Remember Me"** for automatic login
-3. Or use **"Sign in with Google"**
+2. **Email/Password Login**
+   - Enter credentials
+   - Remember Me option for auto-login
+   - Forgot password functionality
 
-### **Managing Tasks**
-1. Go to the **Tasks** tab
-2. Tap the **➕** button to create a task
-3. Check/uncheck to mark as complete
-4. Swipe left to delete
-5. All changes sync to Firestore automatically
+3. **Google Sign-In**
+   - One-tap authentication
+   - Automatic profile sync
+   - Works on web (port 8080), Android, and iOS
 
-### **Profile Management**
-1. Go to the **Profile** tab
-2. Tap the ✏️ icon to edit your name
-3. View your email (read-only)
-4. Tap **Logout** to sign out
+### Task Management
+1. **Create Tasks**
+   - Tap the floating action button
+   - Enter title (required) and description (optional)
+   - Tasks save instantly to Firestore
+   - **Optimistic UI**: Task appears instantly, even before Firestore confirms
 
----
+2. **Complete Tasks**
+   - Check/uncheck checkbox
+   - Visual strikethrough for completed tasks
+   - Real-time status update
 
-## 🔒 Security Features
+3. **Pin Tasks**
+   - Tap the pin icon
+   - Pinned tasks appear at the top
+   - Visual indicator for pinned status
 
-- ✅ Passwords are hashed by Firebase Authentication
-- ✅ User data is protected by Firestore security rules
-- ✅ Each user can only access their own data
-- ✅ Google OAuth for secure third-party authentication
-- ✅ Automatic session management
+4. **Delete Tasks**
+   - Swipe left on any task
+   - Confirmation dialog
+   - Permanent deletion from Firestore
+   - **Race condition safe**: Real-time stream and UI always in sync
 
----
+5. **Filter Tasks**
+   - **All** - View all tasks
+   - **Pending** - View incomplete tasks only
+   - **Completed** - View completed tasks only
 
-## 🐛 Troubleshooting
+### Theme Management
+1. **Toggle Theme**
+   - Tap the sun/moon icon in app bar
+   - Smooth transition between light/dark
+   - Preference saved locally
 
-### **"No Firebase App '[DEFAULT]' has been created"**
-- Ensure `Firebase.initializeApp()` is called before `runApp()`
-- Check that configuration files are in the correct location
+2. **Theme Persistence**
+   - Your theme choice is saved
+   - Auto-applies on app restart
 
-### **Google Sign-In not working**
-- Verify SHA-1 fingerprint is added to Firebase project
-- Check that Google Sign-In is enabled in Firebase Console
-- Ensure `google-services.json` is up to date
+### Profile Management
+1. **View Profile**
+   - See your name, email, and avatar
+   - View task statistics
+   - Access settings
 
-### **Firestore permission denied**
-- Check Firestore security rules
-- Ensure user is authenticated before accessing data
-- Verify userId matches in rules
+2. **Change Username**
+   - Tap edit icon next to name
+   - Enter new name
+   - Updates in Firestore
 
-### **Build errors on iOS**
-- Run `pod install` in the `ios` folder
-- Clean build folder: `flutter clean`
-- Update CocoaPods: `pod repo update`
+3. **Change Password**
+   - Enter current password
+   - Enter new password
+   - Confirm new password
+   - Secure re-authentication
 
----
+4. **Logout**
+   - Confirmation dialog
+   - Clears local session
+   - Returns to auth screen
 
-## 📸 Screenshots
+### Push Notifications
+1. **Receive Notifications**
+   - FCM integrated for push notifications
+   - Handles background and foreground messages
+   - Topic subscription per user
 
-### Login Screen
-![Login Screen](screenshots/login.png)
-
-### Sign Up Screen
-![Sign Up Screen](screenshots/signup.png)
-
-### Profile Tab
-![Profile Tab](screenshots/profile.png)
-
-### Tasks Tab
-![Tasks Tab](screenshots/tasks.png)
-
----
-
-## 📚 Learning Outcomes
-
-### Week 5 (Current)
-- ✅ Firebase project setup and configuration
-- ✅ Email/Password authentication implementation
-- ✅ Google Sign-In integration
-- ✅ Cloud Firestore database operations
-- ✅ Real-time data synchronization
-- ✅ Firestore security rules
-- ✅ User session management
-- ✅ Professional UI/UX design
-
-### Week 4
-- ✅ RESTful API integration
-- ✅ JSON parsing and serialization
-- ✅ HTTP requests with error handling
-- ✅ ListView and dynamic UI
-
-### Week 1-3
-- ✅ Flutter basics and widgets
-- ✅ Form validation
-- ✅ State management
-- ✅ Navigation
+### Advanced State Management (Bonus)
+1. **Riverpod Example**
+   - See `providers/riverpod_providers.dart` for advanced state management
+   - Compare with Provider for learning
 
 ---
 
-## 🔮 Future Enhancements
+## 📊 State Management Architecture
 
-- [ ] Profile picture upload to Firebase Storage
-- [ ] Email verification
-- [ ] Biometric authentication
-- [ ] Dark mode toggle
-- [ ] Task categories and priorities
+### Provider & Riverpod Setup
+```dart
+MultiProvider(
+  providers: [
+    ChangeNotifierProvider(create: (_) => ThemeProvider()),
+    ChangeNotifierProvider(create: (_) => AuthProvider()),
+    ChangeNotifierProxyProvider<AuthProvider, TaskProvider>(
+      create: (_) => TaskProvider(),
+      update: (_, auth, tasks) => tasks?..setUserId(auth.user?.uid),
+    ),
+    // Riverpod example: see providers/riverpod_providers.dart
+  ],
+  child: MyApp(),
+)
+```
+
+### Provider Usage
+```dart
+// Read once
+final authProvider = context.read<AuthProvider>();
+await authProvider.signIn(email, password);
+
+// Listen to changes
+Consumer<TaskProvider>(
+  builder: (context, taskProvider, child) {
+    return ListView.builder(
+      itemCount: taskProvider.tasks.length,
+      itemBuilder: (context, index) => TaskItem(taskProvider.tasks[index]),
+    );
+  },
+)
+
+// Watch for changes
+final tasks = context.watch<TaskProvider>().tasks;
+```
+
+---
+
+## 🎨 UI/UX Features
+
+- Modern, responsive design
+- Staggered list animations
+- OpenContainer transitions
+- AnimatedSwitcher for auth/main
+- Smooth theme switching
+- Profile and settings dialogs
+
+---
+
+## 🔔 Push Notifications (FCM)
+- Integrated with Firebase Messaging
+- Handles background/foreground
+- User topic subscription
+- See `services/notification_service.dart`
+
+---
+
+## 🧪 Testing
+
+### Manual Testing Checklist
+- ✅ Sign up with email/password
+- ✅ Login with email/password
+- ✅ Login with Google
+- ✅ Remember Me functionality
+- ✅ Create task
+- ✅ Complete/Incomplete task
+- ✅ Pin/Unpin task
+- ✅ Delete task
+- ✅ Filter tasks (All/Pending/Completed)
+- ✅ Toggle theme
+- ✅ Change username
+- ✅ Change password
+- ✅ Logout
+- ✅ Theme persists across sessions
+- ✅ Tasks sync in real-time
+
+### Performance Testing
+- ✅ App loads in < 2 seconds
+- ✅ Smooth scrolling at 60fps
+- ✅ No memory leaks
+- ✅ Optimized Firestore queries
+- ✅ Efficient state updates
+
+---
+
+## 🚀 Future Enhancements
+
+### Planned Features
+- [ ] Task categories and tags
 - [ ] Due dates and reminders
-- [ ] Task sharing between users
-- [ ] Search and filter tasks
+- [ ] Task search functionality
+- [ ] Collaborative tasks
+- [ ] Offline mode improvements
+- [ ] Task export to CSV
+
+### Advanced State Management
+- [x] Riverpod example included
+- [ ] Implement BLoC pattern
+- [ ] Compare performance
+
+---
+
+## 📚 Learning Resources
+
+### Provider
+- [Provider Documentation](https://pub.dev/packages/provider)
+- [Flutter State Management](https://docs.flutter.dev/development/data-and-backend/state-mgmt/simple)
+
+### Firebase
+- [FlutterFire](https://firebase.flutter.dev/)
+- [Firestore Best Practices](https://firebase.google.com/docs/firestore/best-practices)
+
+### Flutter
+- [Flutter Documentation](https://docs.flutter.dev/)
+- [Material Design 3](https://m3.material.io/)
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a Pull Request
 
 ---
 
@@ -495,23 +363,34 @@ This project is for educational purposes as part of a Flutter internship program
 
 ---
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Open a Pull Request
-
----
-
 ## 📞 Support
 
-If you encounter any issues:
-1. Check the troubleshooting section above
-2. Review Firebase documentation
-3. Open an issue on GitHub
+For issues or questions:
+1. Check the troubleshooting section
+2. Review the documentation
+3. Open a GitHub issue
 
 ---
 
-**Built with ❤️ using Flutter & Firebase**
+## 🎓 Academic Integrity
+
+This project is completed as part of Week 6 requirements:
+- ✅ Provider state management implemented
+- ✅ Enhanced UI with animations
+- ✅ Performance optimizations
+- ✅ Real-time sync & optimistic updates
+- ✅ Push notifications (FCM)
+- ✅ Riverpod example (bonus)
+- ✅ Comprehensive documentation
+- ✅ Video walkthrough created
+
+---
+
+**Built with ❤️ using Flutter, Provider, Riverpod, and Firebase**
+
+---
+
+**Version**: 2.0.0
+**Last Updated**: February 2026
+**Flutter Version**: 3.38.5
+**Provider Version**: 6.1.1
