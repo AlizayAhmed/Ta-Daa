@@ -36,6 +36,24 @@ A professional Flutter Todo app with **Provider state management**, Firebase int
 
 ---
 
+## 🆕 New Features (2026)
+
+### 📝 Edit & Update Tasks
+- You can now **edit any task**: tap a task to open details, then tap the Edit button to update the title, description, or color.
+- Changes are saved instantly with optimistic UI updates.
+
+### 🎨 Task Color Palette
+- Choose a **color for each task** when creating or editing.
+- 10 beautiful color options + "no color".
+- Task color appears as a left accent stripe on the card and in the details view.
+
+### 📊 Redesigned Stats UI
+- Stats bar now features individual stat cards for **Total, Done, Pending**.
+- Animated progress bar shows your completion rate.
+- Modern, visually appealing layout.
+
+---
+
 ## 📂 Project Structure
 
 ```
@@ -156,27 +174,32 @@ flutter run -d chrome --web-port=8080
 ### Task Management
 1. **Create Tasks**
    - Tap the floating action button
-   - Enter title (required) and description (optional)
+   - Enter title (required), description (optional), and **choose a color**
    - Tasks save instantly to Firestore
    - **Optimistic UI**: Task appears instantly, even before Firestore confirms
 
-2. **Complete Tasks**
+2. **Edit Tasks**
+   - Tap any task to open details
+   - Tap the **Edit** button to update title, description, or color
+   - Changes are saved instantly
+
+3. **Complete Tasks**
    - Check/uncheck checkbox
    - Visual strikethrough for completed tasks
    - Real-time status update
 
-3. **Pin Tasks**
+4. **Pin Tasks**
    - Tap the pin icon
    - Pinned tasks appear at the top
    - Visual indicator for pinned status
 
-4. **Delete Tasks**
+5. **Delete Tasks**
    - Swipe left on any task
    - Confirmation dialog
    - Permanent deletion from Firestore
    - **Race condition safe**: Real-time stream and UI always in sync
 
-5. **Filter Tasks**
+6. **Filter Tasks**
    - **All** - View all tasks
    - **Pending** - View incomplete tasks only
    - **Completed** - View completed tasks only
