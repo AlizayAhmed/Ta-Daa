@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Model class for Todo items
 /// Enhanced with isPinned field for Week 6
+/// Enhanced with taskColor for color-coded tasks
 class TodoModel {
   final String id;
   final String userId;
@@ -9,6 +10,7 @@ class TodoModel {
   final String description;
   final bool isCompleted;
   final bool isPinned;          // NEW: Pin important tasks
+  final int? taskColor;         // NEW: Color code for the task (stored as int)
   final DateTime createdAt;
   final DateTime? updatedAt;
 
@@ -19,6 +21,7 @@ class TodoModel {
     required this.description,
     required this.isCompleted,
     this.isPinned = false,
+    this.taskColor,
     required this.createdAt,
     this.updatedAt,
   });
@@ -34,6 +37,7 @@ class TodoModel {
       description: data['description'] ?? '',
       isCompleted: data['isCompleted'] ?? false,
       isPinned: data['isPinned'] ?? false,  // NEW
+      taskColor: data['taskColor'] as int?,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: data['updatedAt'] != null
           ? (data['updatedAt'] as Timestamp).toDate()
@@ -49,6 +53,7 @@ class TodoModel {
       'description': description,
       'isCompleted': isCompleted,
       'isPinned': isPinned,  // NEW
+      'taskColor': taskColor,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
     };
@@ -62,6 +67,8 @@ class TodoModel {
     String? description,
     bool? isCompleted,
     bool? isPinned,
+    int? taskColor,
+    bool clearColor = false,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -72,6 +79,7 @@ class TodoModel {
       description: description ?? this.description,
       isCompleted: isCompleted ?? this.isCompleted,
       isPinned: isPinned ?? this.isPinned,
+      taskColor: clearColor ? null : (taskColor ?? this.taskColor),
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -86,6 +94,7 @@ class TodoModel {
       'description': description,
       'isCompleted': isCompleted,
       'isPinned': isPinned,
+      'taskColor': taskColor,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
     };
@@ -100,6 +109,7 @@ class TodoModel {
       description: json['description'] ?? '',
       isCompleted: json['isCompleted'] ?? false,
       isPinned: json['isPinned'] ?? false,
+      taskColor: json['taskColor'] as int?,
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: json['updatedAt'] != null
           ? DateTime.parse(json['updatedAt'])
@@ -109,7 +119,7 @@ class TodoModel {
 
   @override
   String toString() {
-    return 'TodoModel(id: $id, title: $title, isCompleted: $isCompleted, isPinned: $isPinned)';
+    return 'TodoModel(id: $id, title: $title, isCompleted: $isCompleted, isPinned: $isPinned, taskColor: $taskColor)';
   }
 
   @override
@@ -123,6 +133,7 @@ class TodoModel {
         other.description == description &&
         other.isCompleted == isCompleted &&
         other.isPinned == isPinned &&
+        other.taskColor == taskColor &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt;
   }
@@ -136,6 +147,7 @@ class TodoModel {
       description,
       isCompleted,
       isPinned,
+      taskColor,
       createdAt,
       updatedAt,
     );

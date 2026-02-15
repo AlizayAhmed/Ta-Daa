@@ -143,6 +143,7 @@ class TaskProvider with ChangeNotifier {
   Future<bool> addTask({
     required String title,
     String? description,
+    int? taskColor,
   }) async {
     if (_userId == null) return false;
 
@@ -156,6 +157,7 @@ class TaskProvider with ChangeNotifier {
         description: description ?? '',
         isCompleted: false,
         isPinned: false,
+        taskColor: taskColor,
         createdAt: DateTime.now(),
       );
 

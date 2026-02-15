@@ -175,64 +175,121 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 pending: provider.pendingTasks,
               ),
               builder: (context, stats, _) {
+                final progressPercent = stats.total > 0
+                    ? stats.completed / stats.total
+                    : 0.0;
                 return RepaintBoundary(
                   child: Container(
-                  margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: isDark
-                          ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
-                          : [Colors.white, const Color(0xFFF8F9FF)],
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
+                    margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: isDark
+                            ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
+                            : [Colors.white, const Color(0xFFF8FAFF)],
+                      ),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
                         color: isDark
-                            ? Colors.black.withOpacity(0.3)
+                            ? Colors.white.withOpacity(0.06)
                             : theme.colorScheme.primary.withOpacity(0.08),
-                        blurRadius: 20,
-                        offset: const Offset(0, 4),
                       ),
-                    ],
+                      boxShadow: [
+                        BoxShadow(
+                          color: isDark
+                              ? Colors.black.withOpacity(0.3)
+                              : theme.colorScheme.primary.withOpacity(0.06),
+                          blurRadius: 24,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        // Top row: stats pills
+                        Row(
+                          children: [
+                            _buildStatCard(
+                              icon: Icons.list_alt_rounded,
+                              label: 'Total',
+                              value: stats.total.toString(),
+                              color: theme.colorScheme.primary,
+                              isDark: isDark,
+                            ),
+                            const SizedBox(width: 12),
+                            _buildStatCard(
+                              icon: Icons.check_circle_rounded,
+                              label: 'Done',
+                              value: stats.completed.toString(),
+                              color: const Color(0xFF10B981),
+                              isDark: isDark,
+                            ),
+                            const SizedBox(width: 12),
+                            _buildStatCard(
+                              icon: Icons.schedule_rounded,
+                              label: 'Pending',
+                              value: stats.pending.toString(),
+                              color: const Color(0xFFF59E0B),
+                              isDark: isDark,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+                        // Progress bar
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Progress',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark ? Colors.white54 : Colors.grey.shade500,
+                                  ),
+                                ),
+                                Text(
+                                  '${(progressPercent * 100).toStringAsFixed(0)}%',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w800,
+                                    color: isDark ? Colors.white : theme.colorScheme.primary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: TweenAnimationBuilder<double>(
+                                tween: Tween(begin: 0, end: progressPercent),
+                                duration: const Duration(milliseconds: 800),
+                                curve: Curves.easeOutCubic,
+                                builder: (context, value, _) {
+                                  return LinearProgressIndicator(
+                                    value: value,
+                                    minHeight: 10,
+                                    backgroundColor: isDark
+                                        ? Colors.white.withOpacity(0.06)
+                                        : theme.colorScheme.primary.withOpacity(0.08),
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      progressPercent >= 1.0
+                                          ? const Color(0xFF10B981)
+                                          : theme.colorScheme.primary,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildStatPill(
-                        icon: Icons.list_alt_rounded,
-                        label: 'Total',
-                        value: stats.total.toString(),
-                        color: theme.colorScheme.primary,
-                        isDark: isDark,
-                      ),
-                      Container(
-                        width: 1,
-                        height: 36,
-                        color: isDark ? Colors.white12 : Colors.grey.shade200,
-                      ),
-                      _buildStatPill(
-                        icon: Icons.check_circle_rounded,
-                        label: 'Done',
-                        value: stats.completed.toString(),
-                        color: const Color(0xFF10B981),
-                        isDark: isDark,
-                      ),
-                      Container(
-                        width: 1,
-                        height: 36,
-                        color: isDark ? Colors.white12 : Colors.grey.shade200,
-                      ),
-                      _buildStatPill(
-                        icon: Icons.schedule_rounded,
-                        label: 'Pending',
-                        value: stats.pending.toString(),
-                        color: const Color(0xFFF59E0B),
-                        isDark: isDark,
-                      ),
-                    ],
-                  ),
-                ),
                 );
               },
             ),
@@ -385,44 +442,56 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildStatPill({
+  Widget _buildStatCard({
     required IconData icon,
     required String label,
     required String value,
     required Color color,
     required bool isDark,
   }) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.12),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(icon, color: color, size: 22),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
-            color: isDark ? Colors.white : Colors.black87,
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+        decoration: BoxDecoration(
+          color: color.withOpacity(isDark ? 0.1 : 0.06),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: color.withOpacity(isDark ? 0.15 : 0.1),
           ),
         ),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-            color: isDark ? Colors.white54 : Colors.grey.shade500,
-            letterSpacing: 0.5,
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: color,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -487,6 +556,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   Widget _buildModernTaskCard(TodoModel task, ThemeData theme, bool isDark, int index) {
     final isCompleted = task.isCompleted;
+    final taskColor = task.taskColor != null ? Color(task.taskColor!) : null;
 
     return Dismissible(
       key: Key(task.id),
@@ -552,7 +622,20 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             ),
           ],
         ),
-        child: Material(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            decoration: taskColor != null
+                ? BoxDecoration(
+                    border: Border(
+                      left: BorderSide(
+                        color: taskColor,
+                        width: 5,
+                      ),
+                    ),
+                  )
+                : null,
+            child: Material(
           color: Colors.transparent,
           child: InkWell(
             onTap: () => _showTaskDetailsDialog(context, task),
@@ -716,6 +799,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             ),
           ),
         ),
+          ),
+        ),
       ),
     );
   }
@@ -774,195 +859,241 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     );
   }
 
+  // Predefined color palette for tasks
+  static const List<Color> _taskColors = [
+    Color(0xFFEF4444), // Red
+    Color(0xFFF97316), // Orange
+    Color(0xFFF59E0B), // Amber
+    Color(0xFF10B981), // Emerald
+    Color(0xFF06B6D4), // Cyan
+    Color(0xFF3B82F6), // Blue
+    Color(0xFF8B5CF6), // Violet
+    Color(0xFFEC4899), // Pink
+    Color(0xFF6366F1), // Indigo
+    Color(0xFF14B8A6), // Teal
+  ];
+
   void _showAddTaskDialog(BuildContext context) {
     final titleController = TextEditingController();
     final descriptionController = TextEditingController();
     final formKey = GlobalKey<FormState>();
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    int? selectedColorValue;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return Container(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E293B) : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-            child: Form(
-              key: formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Handle bar
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: isDark ? Colors.white12 : Colors.grey.shade300,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    'Create New Task',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: isDark ? Colors.white : Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: titleController,
-                    decoration: InputDecoration(
-                      labelText: 'Task Title',
-                      hintText: 'What needs to be done?',
-                      prefixIcon: const Icon(Icons.edit_rounded),
-                      filled: true,
-                      fillColor: isDark
-                          ? Colors.white.withOpacity(0.05)
-                          : Colors.grey.shade50,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide.none,
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(
-                            color: theme.colorScheme.primary, width: 2),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a title';
-                      }
-                      return null;
-                    },
-                    autofocus: true,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: descriptionController,
-                    decoration: InputDecoration(
-                      labelText: 'Description (optional)',
-                      hintText: 'Add some details...',
-                      prefixIcon: const Icon(Icons.notes_rounded),
-                      filled: true,
-                      fillColor: isDark
-                          ? Colors.white.withOpacity(0.05)
-                          : Colors.grey.shade50,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide.none,
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(
-                            color: theme.colorScheme.primary, width: 2),
-                      ),
-                    ),
-                    maxLines: 3,
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
+                      // Handle bar
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color:
+                                isDark ? Colors.white12 : Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(2),
                           ),
-                          child: const Text('Cancel'),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        flex: 2,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: isDark
-                                  ? [
-                                      const Color(0xFFBB86FC),
-                                      const Color(0xFF6200EE)
-                                    ]
-                                  : [
-                                      theme.colorScheme.primary,
-                                      theme.colorScheme.secondary
-                                    ],
-                            ),
-                            borderRadius: BorderRadius.circular(14),
-                            boxShadow: [
-                              BoxShadow(
-                                color:
-                                    theme.colorScheme.primary.withOpacity(0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
+                      const SizedBox(height: 20),
+                      Text(
+                        'Create New Task',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: titleController,
+                        decoration: InputDecoration(
+                          labelText: 'Task Title',
+                          hintText: 'What needs to be done?',
+                          prefixIcon: const Icon(Icons.edit_rounded),
+                          filled: true,
+                          fillColor: isDark
+                              ? Colors.white.withOpacity(0.05)
+                              : Colors.grey.shade50,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
                           ),
-                          child: ElevatedButton.icon(
-                            onPressed: () async {
-                              if (formKey.currentState!.validate()) {
-                                final success =
-                                    await context.read<TaskProvider>().addTask(
-                                          title: titleController.text.trim(),
-                                          description:
-                                              descriptionController.text.trim(),
-                                        );
-                                if (success && context.mounted) {
-                                  Navigator.pop(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content:
-                                          const Text('Task added successfully!'),
-                                      behavior: SnackBarBehavior.floating,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(12)),
-                                    ),
-                                  );
-                                }
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent,
-                              shadowColor: Colors.transparent,
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                            ),
-                            icon: const Icon(Icons.add_rounded,
-                                color: Colors.white),
-                            label: const Text('Create Task',
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600)),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide(
+                                color: theme.colorScheme.primary, width: 2),
                           ),
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter a title';
+                          }
+                          return null;
+                        },
+                        autofocus: true,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: descriptionController,
+                        decoration: InputDecoration(
+                          labelText: 'Description (optional)',
+                          hintText: 'Add some details...',
+                          prefixIcon: const Icon(Icons.notes_rounded),
+                          filled: true,
+                          fillColor: isDark
+                              ? Colors.white.withOpacity(0.05)
+                              : Colors.grey.shade50,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide(
+                                color: theme.colorScheme.primary, width: 2),
+                          ),
+                        ),
+                        maxLines: 3,
+                      ),
+                      const SizedBox(height: 18),
+                      // Color palette
+                      Text(
+                        'Task Color',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white70 : Colors.grey.shade700,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      _buildColorPalette(
+                        selectedColor: selectedColorValue,
+                        isDark: isDark,
+                        onColorSelected: (colorValue) {
+                          setModalState(() {
+                            selectedColorValue = colorValue;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.pop(context),
+                              style: OutlinedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                              child: const Text('Cancel'),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            flex: 2,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: isDark
+                                      ? [
+                                          const Color(0xFFBB86FC),
+                                          const Color(0xFF6200EE)
+                                        ]
+                                      : [
+                                          theme.colorScheme.primary,
+                                          theme.colorScheme.secondary
+                                        ],
+                                ),
+                                borderRadius: BorderRadius.circular(14),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: theme.colorScheme.primary
+                                        .withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: ElevatedButton.icon(
+                                onPressed: () async {
+                                  if (formKey.currentState!.validate()) {
+                                    final success = await context
+                                        .read<TaskProvider>()
+                                        .addTask(
+                                          title: titleController.text.trim(),
+                                          description: descriptionController
+                                              .text
+                                              .trim(),
+                                          taskColor: selectedColorValue,
+                                        );
+                                    if (success && context.mounted) {
+                                      Navigator.pop(context);
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: const Text(
+                                              'Task added successfully!'),
+                                          behavior: SnackBarBehavior.floating,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12)),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                ),
+                                icon: const Icon(Icons.add_rounded,
+                                    color: Colors.white),
+                                label: const Text('Create Task',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600)),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );
@@ -971,6 +1102,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   void _showTaskDetailsDialog(BuildContext context, TodoModel task) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final taskColor = task.taskColor != null ? Color(task.taskColor!) : null;
 
     showModalBottomSheet(
       context: context,
@@ -1000,9 +1132,20 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 ),
                 const SizedBox(height: 20),
 
-                // Title row
+                // Title row with color indicator
                 Row(
                   children: [
+                    if (taskColor != null) ...[
+                      Container(
+                        width: 6,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: taskColor,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                    ],
                     Expanded(
                       child: Text(
                         task.title,
@@ -1073,9 +1216,38 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
                 const SizedBox(height: 24),
 
-                // Action buttons
+                // Action buttons row 1: Edit, Pin, Delete
                 Row(
                   children: [
+                    // Edit
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _showEditTaskDialog(context, task);
+                        },
+                        icon: Icon(
+                          Icons.edit_rounded,
+                          size: 18,
+                          color: theme.colorScheme.primary,
+                        ),
+                        label: Text(
+                          'Edit',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: theme.colorScheme.primary, width: 1.5),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     // Pin / Unpin
                     Expanded(
                       child: OutlinedButton.icon(
@@ -1159,6 +1331,302 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               ],
             ),
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildColorPalette({
+    required int? selectedColor,
+    required bool isDark,
+    required Function(int?) onColorSelected,
+  }) {
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: [
+        // "No color" option
+        GestureDetector(
+          onTap: () => onColorSelected(null),
+          child: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white.withOpacity(0.08) : Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: selectedColor == null
+                    ? (isDark ? Colors.white54 : Colors.grey.shade600)
+                    : Colors.transparent,
+                width: 2.5,
+              ),
+            ),
+            child: Icon(
+              Icons.format_color_reset_rounded,
+              size: 18,
+              color: isDark ? Colors.white38 : Colors.grey.shade400,
+            ),
+          ),
+        ),
+        // Color options
+        ..._taskColors.map((color) {
+          final isSelected = selectedColor == color.value;
+          return GestureDetector(
+            onTap: () => onColorSelected(color.value),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isSelected ? (isDark ? Colors.white : Colors.black87) : Colors.transparent,
+                  width: 2.5,
+                ),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: color.withOpacity(0.4),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        )
+                      ]
+                    : [],
+              ),
+              child: isSelected
+                  ? const Icon(Icons.check_rounded, size: 18, color: Colors.white)
+                  : null,
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  void _showEditTaskDialog(BuildContext context, TodoModel task) {
+    final titleController = TextEditingController(text: task.title);
+    final descriptionController = TextEditingController(text: task.description);
+    final formKey = GlobalKey<FormState>();
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    int? selectedColorValue = task.taskColor;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Handle bar
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color:
+                                isDark ? Colors.white12 : Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Edit Task',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: titleController,
+                        decoration: InputDecoration(
+                          labelText: 'Task Title',
+                          hintText: 'What needs to be done?',
+                          prefixIcon: const Icon(Icons.edit_rounded),
+                          filled: true,
+                          fillColor: isDark
+                              ? Colors.white.withOpacity(0.05)
+                              : Colors.grey.shade50,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide(
+                                color: theme.colorScheme.primary, width: 2),
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter a title';
+                          }
+                          return null;
+                        },
+                        autofocus: true,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: descriptionController,
+                        decoration: InputDecoration(
+                          labelText: 'Description (optional)',
+                          hintText: 'Add some details...',
+                          prefixIcon: const Icon(Icons.notes_rounded),
+                          filled: true,
+                          fillColor: isDark
+                              ? Colors.white.withOpacity(0.05)
+                              : Colors.grey.shade50,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide(
+                                color: theme.colorScheme.primary, width: 2),
+                          ),
+                        ),
+                        maxLines: 3,
+                      ),
+                      const SizedBox(height: 18),
+                      // Color palette
+                      Text(
+                        'Task Color',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white70 : Colors.grey.shade700,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      _buildColorPalette(
+                        selectedColor: selectedColorValue,
+                        isDark: isDark,
+                        onColorSelected: (colorValue) {
+                          setModalState(() {
+                            selectedColorValue = colorValue;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.pop(context),
+                              style: OutlinedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                              child: const Text('Cancel'),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            flex: 2,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: isDark
+                                      ? [
+                                          const Color(0xFFBB86FC),
+                                          const Color(0xFF6200EE)
+                                        ]
+                                      : [
+                                          theme.colorScheme.primary,
+                                          theme.colorScheme.secondary
+                                        ],
+                                ),
+                                borderRadius: BorderRadius.circular(14),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: theme.colorScheme.primary
+                                        .withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: ElevatedButton.icon(
+                                onPressed: () async {
+                                  if (formKey.currentState!.validate()) {
+                                    final updatedTask = task.copyWith(
+                                      title: titleController.text.trim(),
+                                      description:
+                                          descriptionController.text.trim(),
+                                      taskColor: selectedColorValue,
+                                      clearColor: selectedColorValue == null,
+                                      updatedAt: DateTime.now(),
+                                    );
+                                    final success = await context
+                                        .read<TaskProvider>()
+                                        .updateTask(updatedTask);
+                                    if (success && context.mounted) {
+                                      Navigator.pop(context);
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: const Text(
+                                              'Task updated successfully!'),
+                                          behavior: SnackBarBehavior.floating,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12)),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                ),
+                                icon: const Icon(Icons.save_rounded,
+                                    color: Colors.white),
+                                label: const Text('Save Changes',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600)),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
         );
       },
     );
