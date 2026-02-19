@@ -36,7 +36,7 @@ A professional Flutter Todo app with **Provider state management**, Firebase int
 
 ---
 
-## 🆕 New Features (2026)
+## 🆕 Features
 
 ### 📝 Edit & Update Tasks
 - You can now **edit any task**: tap a task to open details, then tap the Edit button to update the title, description, or color.
